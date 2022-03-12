@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:patterns_provider/viewmodel/home_viewmodel.dart';
 import 'package:provider/provider.dart';
-import '../models/post_model.dart';
-import '../services/http_service.dart';
-import '../viewmodel/create_viewmodel.dart';
 
 class CreatePage extends StatefulWidget {
   static const String id = 'create_page';
@@ -12,21 +10,12 @@ class CreatePage extends StatefulWidget {
 }
 
 class _CreatePageState extends State<CreatePage> {
-  CreateViewModel createViewModel = CreateViewModel();
-  var response1;
+  HomeViewModel createViewModel = HomeViewModel();
+  int newValue = 1;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    createViewModel.isLoading = false;
-    var title = createViewModel.titleController.text.trim().toString();
-    var body = createViewModel.bodyController.text.trim().toString();
-    var id = createViewModel.dropdownValue;
-    createViewModel.isLoading = true;
-    Post post = Post(title: title, body: body, userId: id, id: id);
-    var response = Network.POST(Network.API_CREATE, Network.paramsCreate(post));
-    response1 = response;
-    createViewModel.isLoading = false;
   }
 
   @override
@@ -35,7 +24,7 @@ class _CreatePageState extends State<CreatePage> {
       backgroundColor: Colors.white,
       body: ChangeNotifierProvider(
         create: (context) => createViewModel,
-        child: Consumer<CreateViewModel>(
+        child: Consumer<HomeViewModel>(
           builder: (ctx, model, index) => Stack(
         children:[
           Column(
@@ -130,6 +119,7 @@ class _CreatePageState extends State<CreatePage> {
                   ],
                   onChanged: (int? newValue){
                       createViewModel.dropdownValue = newValue!;
+                      createViewModel.apiNewValue();
                   },
                 ),
               ),
@@ -144,8 +134,7 @@ class _CreatePageState extends State<CreatePage> {
                 child: TextButton(
                   child: const Text('OK', style: TextStyle(color: Colors.white),),
                   onPressed: () {
-                    createViewModel.apiCreatePost();
-                    Navigator.pop(context, response1);
+                    createViewModel.apiPostCreate(context);
                   }
                     ),
                     ),

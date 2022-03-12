@@ -1,13 +1,7 @@
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:patterns_provider/pages/home_page.dart';
+import 'package:patterns_provider/viewmodel/home_viewmodel.dart';
 import 'package:provider/provider.dart';
-
-import '../models/post_model.dart';
-import '../services/http_service.dart';
-import '../viewmodel/update_viewmodel.dart';
 
 class UpdatePage extends StatefulWidget {
   static const String id = "update_page";
@@ -19,28 +13,25 @@ class UpdatePage extends StatefulWidget {
 }
 
 class _UpdatePageState extends State<UpdatePage> {
-  UpdateViewModel updateViewModel = UpdateViewModel();
+  HomeViewModel updateViewModel = HomeViewModel();
+  String titleInput = "", bodyInput = "";
   var response;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    updateViewModel.isLoading = true;
-    updateViewModel.titleInput = widget.title;
-    updateViewModel.bodyInput = widget.body;
-    updateViewModel.titleController.text = updateViewModel.titleInput;
-    updateViewModel.bodyController.text = updateViewModel.bodyInput;
-    updateViewModel.isLoading = true;
-    Post post = Post(title: updateViewModel.titleController.text, body: updateViewModel.bodyController.text, id: Random().nextInt(10), userId: Random().nextInt(10));
-    response = Network.PUT(Network.API_UPDATE, Network.paramsUpdate(post));
     updateViewModel.isLoading = false;
+    titleInput = widget.title;
+    bodyInput = widget.body;
+    updateViewModel.titleUpdateController.text = titleInput;
+    updateViewModel.bodyUpdateController.text = bodyInput;
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ChangeNotifierProvider(
         create: (context) => updateViewModel,
-        child: Consumer<UpdateViewModel>(
+        child: Consumer<HomeViewModel>(
           builder: (ctx, model, index) => Stack(
             children: [
               Container(
@@ -58,7 +49,7 @@ class _UpdatePageState extends State<UpdatePage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       margin: const EdgeInsets.only(top: 5, bottom: 5),
-                      child: Text(updateViewModel.titleInput,
+                      child: Text(titleInput,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold
                         ),
@@ -68,6 +59,8 @@ class _UpdatePageState extends State<UpdatePage> {
                     const SizedBox(height: 10,),
                     Row(
                       children: [
+
+                        //Title Input
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.only(left: 10),
@@ -76,7 +69,7 @@ class _UpdatePageState extends State<UpdatePage> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextField(
-                              controller: updateViewModel.titleController,
+                              controller: updateViewModel.titleUpdateController,
                               decoration: const InputDecoration(
                                 label: Text("Title"),
                                 border: InputBorder.none,
@@ -84,6 +77,8 @@ class _UpdatePageState extends State<UpdatePage> {
                             ),
                           ),
                         ),
+
+                        //Title Ptichka
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade200,
@@ -93,17 +88,22 @@ class _UpdatePageState extends State<UpdatePage> {
                           child: IconButton(
                             icon: const Icon(Icons.check),
                             onPressed: (){
-                                updateViewModel.titleInput = updateViewModel.titleController.text;
+                                titleInput = updateViewModel.titleUpdateController.text;
+                                updateViewModel.apiChangeInput();
                             },
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 20,),
+
                     const Center(
                       child: Text('Body', style: TextStyle(fontSize: 20, color: Colors.blue, fontWeight: FontWeight.bold),),
                     ),
                     const SizedBox(height: 5,),
+
+                    // Old BODY
                     Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -111,10 +111,12 @@ class _UpdatePageState extends State<UpdatePage> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.all(15),
-                        child: Text(updateViewModel.bodyInput)),
+                        child: Text(bodyInput)),
                     const SizedBox(height: 20,),
                     Row(
                       children: [
+
+                        //Body Input
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.only(left: 10),
@@ -125,13 +127,16 @@ class _UpdatePageState extends State<UpdatePage> {
                             child: TextField(
                               keyboardType: TextInputType.multiline,
                               maxLength: null,
-                              controller: updateViewModel.bodyController,
+                              controller: updateViewModel.bodyUpdateController,
                               decoration: const InputDecoration(
+                                label: Text("Body"),
                                 border: InputBorder.none,
                               ),
                             ),
                           ),
                         ),
+
+                        //Body Ptichka
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade200,
@@ -141,7 +146,8 @@ class _UpdatePageState extends State<UpdatePage> {
                           child: IconButton(
                             icon: const Icon(Icons.check),
                             onPressed: (){
-                                updateViewModel.bodyInput = updateViewModel.bodyController.text;
+                              bodyInput = updateViewModel.bodyUpdateController.text;
+                              updateViewModel.apiChangeInput();
                             },
                           ),
                         ),
@@ -156,9 +162,7 @@ class _UpdatePageState extends State<UpdatePage> {
                       ),
                       child: TextButton(
                         onPressed: () {
-                          if(response != null){
-                            Navigator.pushNamedAndRemoveUntil(context, HomePage.id, (route) => false);
-                          }
+                          updateViewModel.apiPostUpdate(context);
                         },
                         child: const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
